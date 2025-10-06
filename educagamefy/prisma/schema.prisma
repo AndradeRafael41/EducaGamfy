@@ -21,18 +21,18 @@ model users {
 }
 
 model students {
-  id             Int               @id
-  class          String?           @db.VarChar(50)
-  level          Int               @default(1)
-  total_points   Int               @default(0)
-  level_progress Int               @default(0) // porcentagem do nível atual (0–100)
+  id             Int      @id
+  class_id       Int?     // nova coluna de referência
+  level          Int      @default(1)
+  total_points   Int      @default(0)
+  level_progress Int      @default(0) // porcentagem do nível atual (0–100)
 
-  user           users             @relation(fields: [id], references: [id])
+  user           users    @relation(fields: [id], references: [id])
+  class          classes? @relation(fields: [class_id], references: [id])
   submissions    task_submissions[]
   redemptions    reward_redemptions[]
   badges         student_badges[]
 }
-
 
 model teachers {
   id        Int      @id
@@ -42,21 +42,26 @@ model teachers {
   user      users    @relation(fields: [id], references: [id])
   tasks     tasks[]
   rewards   rewards[]
+  classes   classes[] //
 }
+
 
 model tasks {
-  id           Int               @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   teacher_id   Int
-  title        String            @db.VarChar(150)
+  class_id     Int      
+  title        String    @db.VarChar(150)
   description  String?
   max_points   Int
-  created_at   DateTime?         @default(now()) @db.Timestamp(6)
-  due_date     DateTime?         @db.Timestamp(6)
-  link         String?           @db.VarChar(500)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  due_date     DateTime? @db.Timestamp(6)
+  link         String?   @db.VarChar(500)
 
-  teacher      teachers          @relation(fields: [teacher_id], references: [id])
+  teacher      teachers  @relation(fields: [teacher_id], references: [id])
+  class        classes   @relation(fields: [class_id], references: [id]) // relação com classe
   submissions  task_submissions[]
 }
+
 
 model task_submissions {
   id            Int       @id @default(autoincrement())
@@ -121,6 +126,17 @@ model notifications {
 
   user       users     @relation(fields: [user_id], references: [id])
 }
+
+model classes {
+  id         Int       @id @default(autoincrement())
+  title      String    @db.VarChar(150)
+  teacher_id Int
+
+  teacher    teachers  @relation(fields: [teacher_id], references: [id])
+  students   students[]
+  tasks      tasks[]   
+}
+
 
 enum user_role {
   TEACHER
