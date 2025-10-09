@@ -21,6 +21,134 @@ model users {
 }
 
 model students {
+  id             Int               @id
+  class          String?           @db.VarChar(50)
+  level          Int               @default(1)
+  total_points   Int               @default(0)
+  level_progress Int               @default(0) // porcentagem do nível atual (0–100)
+
+  user           users             @relation(fields: [id], references: [id])
+  submissions    task_submissions[]
+  redemptions    reward_redemptions[]
+  badges         student_badges[]
+}
+
+
+model teachers {
+  id        Int      @id
+  subject   String?  @db.VarChar(100)
+  school    String?  @db.VarChar(150)
+
+  user      users    @relation(fields: [id], references: [id])
+  tasks     tasks[]
+  rewards   rewards[]
+}
+
+model tasks {
+  id           Int               @id @default(autoincrement())
+  teacher_id   Int
+  title        String            @db.VarChar(150)
+  description  String?
+  max_points   Int
+  created_at   DateTime?         @default(now()) @db.Timestamp(6)
+  due_date     DateTime?         @db.Timestamp(6)
+  link         String?           @db.VarChar(500)
+
+  teacher      teachers          @relation(fields: [teacher_id], references: [id])
+  submissions  task_submissions[]
+}
+
+model task_submissions {
+  id            Int       @id @default(autoincrement())
+  task_id       Int
+  student_id    Int
+  points        Int       @default(0)
+  submitted_at  DateTime? @db.Timestamp(6)
+  status        String    @default("pending") @db.VarChar(50)
+  link          String?   @db.VarChar(500)
+
+  task          tasks     @relation(fields: [task_id], references: [id])
+  student       students  @relation(fields: [student_id], references: [id])
+}
+
+model rewards {
+  id           Int      @id @default(autoincrement())
+  teacher_id   Int
+  name         String    @db.VarChar(100)
+  description  String?
+  cost_points  Int
+
+  teacher      teachers           @relation(fields: [teacher_id], references: [id])
+  redemptions  reward_redemptions[]
+}
+
+model reward_redemptions {
+  id           Int       @id @default(autoincrement())
+  reward_id    Int
+  student_id   Int
+  redeemed_at  DateTime? @default(now()) @db.Timestamp(6)
+
+  reward       rewards   @relation(fields: [reward_id], references: [id])
+  student      students  @relation(fields: [student_id], references: [id])
+}
+
+model badges {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?
+  criteria    String?
+
+  students    student_badges[]
+}
+
+model student_badges {
+  student_id  Int
+  badge_id    Int
+  earned_at   DateTime? @default(now()) @db.Timestamp(6)
+
+  student     students @relation(fields: [student_id], references: [id])
+  badge       badges   @relation(fields: [badge_id], references: [id])
+
+  @@id([student_id, badge_id])
+}
+
+model notifications {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  message    String
+  sent_at    DateTime? @default(now()) @db.Timestamp(6)
+  read       Boolean   @default(false)
+
+  user       users     @relation(fields: [user_id], references: [id])
+}
+
+enum user_role {
+  TEACHER
+  STUDENT
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  email      String    @unique @db.VarChar(150)
+  password   String
+  role       user_role
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  student     students?
+  teacher     teachers?
+  notifications notifications[]
+}
+
+model students {
   id             Int      @id
   class_id       Int?     // nova coluna de referência
   level          Int      @default(1)
