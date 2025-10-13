@@ -7,7 +7,6 @@ import { Progress } from "@/app/components/ui/progress"
 import { Button } from "@/app/components/ui/button"
 import { Trophy, Star, Award, Target, Zap, Crown, LogOut } from "lucide-react"
 
-// Mock data - replace with real data from your database
 const studentData = {
   name: "Maria Silva",
   grade: "5º Ano",

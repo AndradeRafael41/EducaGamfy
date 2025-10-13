@@ -1,14 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // 1. ONDE BUSCAR AS CLASSES (MUITO IMPORTANTE!)
   content: [
-    // Next.js App Router:
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   
-  // 2. CONFIGURAÇÃO DE TEMA (Shadcn/Radix)
   darkMode: ["class"],
   theme: {
     container: {
@@ -19,7 +16,6 @@ module.exports = {
       },
     },
     extend: {
-      // CORES CUSTOMIZADAS (Essencial para o código da IA funcionar)
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -38,9 +34,7 @@ module.exports = {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        // Adicione outras cores que o código da IA possa estar usando, se necessário
       },
-      // ANIMAÇÕES (Geralmente para o menu dropdown, etc.)
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -58,6 +52,5 @@ module.exports = {
     },
   },
   
-  // 3. PLUGINS (Inclui o tailwindcss-animate que instalamos)
   plugins: [require("tailwindcss-animate")],
 };
