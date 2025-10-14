@@ -17,7 +17,7 @@ import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { Users, Plus, Eye, LogOut, BookOpen, TrendingUp, ClipboardCheck } from "lucide-react"
+import { Users, Plus, Eye, LogOut, BookOpen, TrendingUp, ClipboardCheck, UserPlus } from "lucide-react"
 
 interface Student {
   id: string
@@ -54,7 +54,7 @@ export default function TeacherDashboard() {
       id: "1",
       name: "Turma A",
       grade: "5º Ano",
-      studentCount: 25,
+      studentCount: 3,
       students: [
         { id: "1", name: "Maria Silva", avatar: "/happy-student-avatar.jpg", level: 12, xp: 2450, medals: 8 },
         { id: "2", name: "João Santos", avatar: "/happy-student-avatar.jpg", level: 10, xp: 1980, medals: 6 },
@@ -65,7 +65,7 @@ export default function TeacherDashboard() {
       id: "2",
       name: "Turma B",
       grade: "5º Ano",
-      studentCount: 28,
+      studentCount: 2,
       students: [
         { id: "4", name: "Pedro Oliveira", avatar: "/happy-student-avatar.jpg", level: 11, xp: 2100, medals: 7 },
         { id: "5", name: "Lucas Ferreira", avatar: "/happy-student-avatar.jpg", level: 13, xp: 2650, medals: 9 },
@@ -75,7 +75,7 @@ export default function TeacherDashboard() {
       id: "3",
       name: "Turma C",
       grade: "4º Ano",
-      studentCount: 22,
+      studentCount: 1,
       students: [
         { id: "6", name: "Sofia Almeida", avatar: "/happy-student-avatar.jpg", level: 9, xp: 1750, medals: 5 },
       ],
@@ -87,6 +87,13 @@ export default function TeacherDashboard() {
   const [newStudentName, setNewStudentName] = useState("")
   const [newStudentEmail, setNewStudentEmail] = useState("")
 
+  const [isCreateClassroomOpen, setIsCreateClassroomOpen] = useState(false)
+  const [newClassroom, setNewClassroom] = useState({
+    name: "",
+    grade: "",
+    subject: "",
+  })
+
   const [tasks, setTasks] = useState<Task[]>([])
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
   const [taskForm, setTaskForm] = useState({
@@ -97,6 +104,23 @@ export default function TeacherDashboard() {
     completed: false,
     score: 0,
   })
+
+  const [allStudents] = useState<Student[]>([
+    { id: "1", name: "Maria Silva", avatar: "/happy-student-avatar.jpg", level: 12, xp: 2450, medals: 8 },
+    { id: "2", name: "João Santos", avatar: "/happy-student-avatar.jpg", level: 10, xp: 1980, medals: 6 },
+    { id: "3", name: "Ana Costa", avatar: "/happy-student-avatar.jpg", level: 15, xp: 3200, medals: 12 },
+    { id: "4", name: "Pedro Oliveira", avatar: "/happy-student-avatar.jpg", level: 11, xp: 2100, medals: 7 },
+    { id: "5", name: "Lucas Ferreira", avatar: "/happy-student-avatar.jpg", level: 13, xp: 2650, medals: 9 },
+    { id: "6", name: "Sofia Almeida", avatar: "/happy-student-avatar.jpg", level: 9, xp: 1750, medals: 5 },
+    { id: "7", name: "Beatriz Lima", avatar: "/student-girl.jpg", level: 8, xp: 1500, medals: 4 },
+    { id: "8", name: "Gabriel Souza", avatar: "/student-boy.jpg", level: 14, xp: 2900, medals: 10 },
+    { id: "9", name: "Julia Martins", avatar: "/student-girl-2.jpg", level: 11, xp: 2200, medals: 7 },
+    { id: "10", name: "Rafael Costa", avatar: "/student-boy-2.jpg", level: 10, xp: 2000, medals: 6 },
+  ])
+
+  const [isAssignStudentOpen, setIsAssignStudentOpen] = useState(false)
+  const [selectedStudentsToAssign, setSelectedStudentsToAssign] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleLogout = () => {
     console.log("Logout clicked")
@@ -148,9 +172,75 @@ export default function TeacherDashboard() {
     }
   }
 
+  const handleCreateClassroom = () => {
+    if (newClassroom.name && newClassroom.grade) {
+      const classroom: Classroom = {
+        id: Date.now().toString(),
+        name: newClassroom.name,
+        grade: newClassroom.grade,
+        studentCount: 0,
+        students: [],
+      }
+
+      setClassrooms([...classrooms, classroom])
+      setIsCreateClassroomOpen(false)
+      setNewClassroom({ name: "", grade: "", subject: "" })
+      console.log("Nova turma criada:", classroom)
+    }
+  }
+
   const getStudentsForTaskForm = () => {
     const classroom = classrooms.find((c) => c.id === taskForm.classroomId)
     return classroom?.students || []
+  }
+
+  const getAvailableStudents = () => {
+    if (!selectedClassroom) return []
+
+    const classroomStudentIds = selectedClassroom.students.map((s) => s.id)
+    return allStudents.filter((student) => !classroomStudentIds.includes(student.id))
+  }
+
+  const getFilteredAvailableStudents = () => {
+    const available = getAvailableStudents()
+    if (!searchQuery) return available
+
+    return available.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  }
+
+  const handleAssignStudents = () => {
+    if (selectedClassroom && selectedStudentsToAssign.length > 0) {
+      const studentsToAdd = allStudents.filter((s) => selectedStudentsToAssign.includes(s.id))
+
+      setClassrooms(
+        classrooms.map((classroom) => {
+          if (classroom.id === selectedClassroom.id) {
+            return {
+              ...classroom,
+              students: [...classroom.students, ...studentsToAdd],
+              studentCount: classroom.studentCount + studentsToAdd.length,
+            }
+          }
+          return classroom
+        }),
+      )
+
+      console.log(
+        "Assigned students:",
+        studentsToAdd.map((s) => s.name),
+        "to",
+        selectedClassroom.name,
+      )
+      setIsAssignStudentOpen(false)
+      setSelectedStudentsToAssign([])
+      setSearchQuery("")
+    }
+  }
+
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentsToAssign((prev) =>
+      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId],
+    )
   }
 
   return (
@@ -336,6 +426,67 @@ export default function TeacherDashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Minhas Turmas</h2>
+            <Dialog open={isCreateClassroomOpen} onOpenChange={setIsCreateClassroomOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Turma
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-card border-border">
+                <DialogHeader>
+                  <DialogTitle className="text-foreground">Criar Nova Turma</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    Preencha as informações para criar uma nova turma
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="className" className="text-foreground">
+                      Nome da Turma
+                    </Label>
+                    <Input
+                      id="className"
+                      placeholder="Ex: Turma A, 5º Ano A"
+                      value={newClassroom.name}
+                      onChange={(e) => setNewClassroom({ ...newClassroom, name: e.target.value })}
+                      className="bg-input border-border text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="grade" className="text-foreground">
+                      Série/Ano
+                    </Label>
+                    <Input
+                      id="grade"
+                      placeholder="Ex: 5º Ano, 6º Ano"
+                      value={newClassroom.grade}
+                      onChange={(e) => setNewClassroom({ ...newClassroom, grade: e.target.value })}
+                      className="bg-input border-border text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-foreground">
+                      Disciplina (Opcional)
+                    </Label>
+                    <Input
+                      id="subject"
+                      placeholder="Ex: Matemática, Português"
+                      value={newClassroom.subject}
+                      onChange={(e) => setNewClassroom({ ...newClassroom, subject: e.target.value })}
+                      className="bg-input border-border text-foreground"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCreateClassroom}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    disabled={!newClassroom.name || !newClassroom.grade}
+                  >
+                    Criar Turma
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -415,6 +566,105 @@ export default function TeacherDashboard() {
                     </Dialog>
 
                     <Dialog
+                      open={isAssignStudentOpen && selectedClassroom?.id === classroom.id}
+                      onOpenChange={setIsAssignStudentOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full border-primary/50 hover:bg-primary/10 bg-transparent text-primary"
+                          onClick={() => {
+                            setSelectedClassroom(classroom)
+                            setSelectedStudentsToAssign([])
+                            setSearchQuery("")
+                          }}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Adicionar Alunos Existentes
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl bg-card border-border">
+                        <DialogHeader>
+                          <DialogTitle className="text-foreground">Adicionar Alunos à Turma</DialogTitle>
+                          <DialogDescription className="text-muted-foreground">
+                            Selecione os alunos que deseja adicionar à turma {classroom.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="search" className="text-foreground">
+                              Buscar Aluno
+                            </Label>
+                            <Input
+                              id="search"
+                              placeholder="Digite o nome do aluno..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="bg-input border-border text-foreground"
+                            />
+                          </div>
+
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {getFilteredAvailableStudents().length === 0 ? (
+                              <div className="text-center py-8 text-muted-foreground">
+                                {getAvailableStudents().length === 0
+                                  ? "Todos os alunos já estão nesta turma"
+                                  : "Nenhum aluno encontrado com esse nome"}
+                              </div>
+                            ) : (
+                              getFilteredAvailableStudents().map((student) => (
+                                <div
+                                  key={student.id}
+                                  className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                                  onClick={() => toggleStudentSelection(student.id)}
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <Checkbox
+                                      checked={selectedStudentsToAssign.includes(student.id)}
+                                      onCheckedChange={() => toggleStudentSelection(student.id)}
+                                    />
+                                    <Avatar className="h-12 w-12 border-2 border-primary">
+                                      <AvatarImage src={student.avatar || "/placeholder.svg"} alt={student.name} />
+                                      <AvatarFallback className="bg-primary text-primary-foreground">
+                                        {student.name
+                                          .split(" ")
+                                          .map((n) => n[0])
+                                          .join("")}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-semibold text-foreground">{student.name}</p>
+                                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                        <span>Nível {student.level}</span>
+                                        <span>•</span>
+                                        <span>{student.xp} XP</span>
+                                        <span>•</span>
+                                        <span>{student.medals} medalhas</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-border">
+                            <p className="text-sm text-muted-foreground">
+                              {selectedStudentsToAssign.length} aluno(s) selecionado(s)
+                            </p>
+                            <Button
+                              onClick={handleAssignStudents}
+                              disabled={selectedStudentsToAssign.length === 0}
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            >
+                              Adicionar à Turma
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog
                       open={isAddStudentOpen && selectedClassroom?.id === classroom.id}
                       onOpenChange={setIsAddStudentOpen}
                     >
@@ -424,14 +674,14 @@ export default function TeacherDashboard() {
                           onClick={() => setSelectedClassroom(classroom)}
                         >
                           <Plus className="h-4 w-4 mr-2" />
-                          Adicionar Aluno
+                          Criar Novo Aluno
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-card border-border">
                         <DialogHeader>
-                          <DialogTitle className="text-foreground">Adicionar Novo Aluno</DialogTitle>
+                          <DialogTitle className="text-foreground">Criar Novo Aluno</DialogTitle>
                           <DialogDescription className="text-muted-foreground">
-                            Adicione um novo aluno à turma {classroom.name}
+                            Crie um novo aluno e adicione à turma {classroom.name}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
@@ -464,7 +714,7 @@ export default function TeacherDashboard() {
                             onClick={handleAddStudent}
                             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
-                            Adicionar Aluno
+                            Criar e Adicionar Aluno
                           </Button>
                         </div>
                       </DialogContent>
