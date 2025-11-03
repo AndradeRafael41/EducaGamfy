@@ -1,32 +1,60 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
-import { Button } from "@/app/components/ui/button"
-import { Label } from "@/app/components/ui/label"
-import { GraduationCap, User } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
+import { Button } from "@/app/components/ui/button";
+import { Label } from "@/app/components/ui/label";
+import { GraduationCap } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
-  const [userType, setUserType] = useState<"student" | "teacher">("student")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Adicionar Lógica de autentificação
-    console.log("[v0] Login:", { email, password, userType })
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-    // Redirecionar baseado no tipo de usuário
-    if (userType === "teacher") {
-      window.location.href = "/teacher"
-    } else {
-      window.location.href = "/"
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (res?.error) {
+      if (res.error === "CredentialsSignin") {
+        setMessage("❌ E-mail ou senha incorretos!");
+      } else {
+        setMessage("❌ Ocorreu um erro ao fazer login.");
+      }
+      return;
     }
-  }
+
+    setMessage("✅ Login bem-sucedido!");
+
+    // Buscar sessão atual para redirecionamento
+    const session = await fetch("/api/auth/session").then((r) => r.json());
+    const role = session?.user?.role?.toLowerCase();
+
+    if (role === "teacher") router.push("/teacher/dashboard");
+    else if (role === "student") router.push("/student/dashboard");
+    else router.push("/");
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -40,34 +68,9 @@ export default function LoginPage() {
           <CardTitle className="text-2xl font-bold">Bem-vindo de volta!</CardTitle>
           <CardDescription>Entre com suas credenciais para continuar</CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Seleção de tipo de usuário */}
-            <div className="space-y-2">
-              <Label>Tipo de usuário</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant={userType === "student" ? "default" : "outline"}
-                  className="w-full"
-                  onClick={() => setUserType("student")}
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Aluno
-                </Button>
-                <Button
-                  type="button"
-                  variant={userType === "teacher" ? "default" : "outline"}
-                  className="w-full"
-                  onClick={() => setUserType("teacher")}
-                >
-                  <GraduationCap className="w-4 h-4 mr-2" />
-                  Professor
-                </Button>
-              </div>
-            </div>
-
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -80,7 +83,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Senha */}
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
@@ -93,7 +95,16 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Link esqueci a senha */}
+            {message && (
+              <p
+                className={`text-center mt-2 ${
+                  message.startsWith("✅") ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {message}
+              </p>
+            )}
+
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
@@ -103,12 +114,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {/* Botão de login */}
-            <Button type="submit" className="w-full">
-              Entrar
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
 
-            {/* Link para registro */}
             <div className="text-center text-sm text-muted-foreground">
               Não tem uma conta?{" "}
               <Link href="/register" className="text-primary hover:underline">
@@ -119,5 +128,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
