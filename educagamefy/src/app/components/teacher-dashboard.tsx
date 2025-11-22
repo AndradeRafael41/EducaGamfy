@@ -16,8 +16,8 @@ import {
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Checkbox } from "@/app/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { Users, Plus, Eye, LogOut, BookOpen, TrendingUp, ClipboardCheck, UserPlus } from "lucide-react"
+import { Users, Plus, Eye, LogOut, BookOpen, TrendingUp, UserPlus } from "lucide-react"
+import { TaskTabs } from "@/app/components/teacher/task-tabs"
 
 interface Student {
   id: string
@@ -95,15 +95,6 @@ export default function TeacherDashboard() {
   })
 
   const [tasks, setTasks] = useState<Task[]>([])
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
-  const [taskForm, setTaskForm] = useState({
-    classroomId: "",
-    studentId: "",
-    taskName: "",
-    date: "",
-    completed: false,
-    score: 0,
-  })
 
   const [allStudents] = useState<Student[]>([
     { id: "1", name: "Maria Silva", avatar: "/happy-student-avatar.jpg", level: 12, xp: 2450, medals: 8 },
@@ -139,39 +130,6 @@ export default function TeacherDashboard() {
     console.log("Viewing profile for:", student.name)
   }
 
-  const handleAddTask = () => {
-    if (taskForm.classroomId && taskForm.studentId && taskForm.taskName && taskForm.date) {
-      const classroom = classrooms.find((c) => c.id === taskForm.classroomId)
-      const student = classroom?.students.find((s) => s.id === taskForm.studentId)
-
-      if (classroom && student) {
-        const newTask: Task = {
-          id: Date.now().toString(),
-          studentId: student.id,
-          studentName: student.name,
-          classroomId: classroom.id,
-          classroomName: classroom.name,
-          taskName: taskForm.taskName,
-          date: taskForm.date,
-          completed: taskForm.completed,
-          score: taskForm.score,
-        }
-
-        setTasks([...tasks, newTask])
-        setIsAddTaskOpen(false)
-        setTaskForm({
-          classroomId: "",
-          studentId: "",
-          taskName: "",
-          date: "",
-          completed: false,
-          score: 0,
-        })
-        console.log("Task registered:", newTask)
-      }
-    }
-  }
-
   const handleCreateClassroom = () => {
     if (newClassroom.name && newClassroom.grade) {
       const classroom: Classroom = {
@@ -187,11 +145,6 @@ export default function TeacherDashboard() {
       setNewClassroom({ name: "", grade: "", subject: "" })
       console.log("Nova turma criada:", classroom)
     }
-  }
-
-  const getStudentsForTaskForm = () => {
-    const classroom = classrooms.find((c) => c.id === taskForm.classroomId)
-    return classroom?.students || []
   }
 
   const getAvailableStudents = () => {
@@ -256,128 +209,6 @@ export default function TeacherDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                  <ClipboardCheck className="h-4 w-4 mr-2" />
-                  Cadastrar Tarefa
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-card border-border max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-foreground">Cadastrar Tarefa</DialogTitle>
-                  <DialogDescription className="text-muted-foreground">
-                    Registre a tarefa realizada pelo aluno
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="classroom" className="text-foreground">
-                      Turma
-                    </Label>
-                    <Select
-                      value={taskForm.classroomId}
-                      onValueChange={(value) => setTaskForm({ ...taskForm, classroomId: value, studentId: "" })}
-                    >
-                      <SelectTrigger className="bg-input border-border text-foreground">
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-popover border-border">
-                        {classrooms.map((classroom) => (
-                          <SelectItem key={classroom.id} value={classroom.id}>
-                            {classroom.name} - {classroom.grade}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="student" className="text-foreground">
-                      Aluno
-                    </Label>
-                    <Select
-                      value={taskForm.studentId}
-                      onValueChange={(value) => setTaskForm({ ...taskForm, studentId: value })}
-                      disabled={!taskForm.classroomId}
-                    >
-                      <SelectTrigger className="bg-input border-border text-foreground">
-                        <SelectValue placeholder="Selecione o aluno" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-popover border-border">
-                        {getStudentsForTaskForm().map((student) => (
-                          <SelectItem key={student.id} value={student.id}>
-                            {student.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="taskName" className="text-foreground">
-                      Nome da Tarefa
-                    </Label>
-                    <Input
-                      id="taskName"
-                      placeholder="Ex: Exercícios de Matemática"
-                      value={taskForm.taskName}
-                      onChange={(e) => setTaskForm({ ...taskForm, taskName: e.target.value })}
-                      className="bg-input border-border text-foreground"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="date" className="text-foreground">
-                      Data
-                    </Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={taskForm.date}
-                      onChange={(e) => setTaskForm({ ...taskForm, date: e.target.value })}
-                      className="bg-input border-border text-foreground"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="completed"
-                      checked={taskForm.completed}
-                      onCheckedChange={(checked) => setTaskForm({ ...taskForm, completed: checked as boolean })}
-                    />
-                    <Label htmlFor="completed" className="text-foreground cursor-pointer">
-                      Tarefa foi realizada
-                    </Label>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="score" className="text-foreground">
-                      Porcentagem de Acertos (%)
-                    </Label>
-                    <Input
-                      id="score"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={taskForm.score}
-                      onChange={(e) => setTaskForm({ ...taskForm, score: Number(e.target.value) })}
-                      className="bg-input border-border text-foreground"
-                      disabled={!taskForm.completed}
-                    />
-                  </div>
-
-                  <Button
-                    onClick={handleAddTask}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    Salvar Tarefa
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -420,6 +251,11 @@ export default function TeacherDashboard() {
               <div className="text-3xl font-bold text-secondary">85%</div>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas</h2>
+          <TaskTabs classrooms={classrooms} />
         </div>
 
         {/* Classrooms Section */}
