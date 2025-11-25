@@ -5,7 +5,7 @@ import type React from "react"
 import { Card } from "@/app/components/ui/card"
 import { Badge } from "@/app/components/ui/badge"
 import { Button } from "@/app/components/ui/button"
-import { AlertCircle, Zap, Gift } from "lucide-react"
+import { AlertCircle, Zap, Gift, Users, Palette } from "lucide-react"
 import { useState } from "react"
 import {
   AlertDialog,
@@ -22,12 +22,107 @@ interface Reward {
   name: string
   description: string
   cost: number
-  category: "item" | "experience" | "special"
+  category: "item" | "experience" | "special" | "avatar" | "background"
   icon: React.ReactNode
   availability: "available" | "unavailable"
 }
 
 const mockRewards: Reward[] = [
+  // Avatares
+  {
+    id: 101,
+    name: "Avatar Neon",
+    description: "Desbloqueie o avatar exclusivo Neon para seu perfil",
+    cost: 250,
+    category: "avatar",
+    icon: <Users className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 102,
+    name: "Avatar Astronauta",
+    description: "Desbloqueie o avatar temático Astronauta",
+    cost: 500,
+    category: "avatar",
+    icon: <Users className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 103,
+    name: "Avatar Pirata",
+    description: "Desbloqueie o avatar aventureiro Pirata",
+    cost: 350,
+    category: "avatar",
+    icon: <Users className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 104,
+    name: "Avatar Superhéroe",
+    description: "Desbloqueie o avatar heroico Superhéroe",
+    cost: 400,
+    category: "avatar",
+    icon: <Users className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 105,
+    name: "Avatar Místico",
+    description: "Desbloqueie o avatar enigmático Místico",
+    cost: 600,
+    category: "avatar",
+    icon: <Users className="h-6 w-6" />,
+    availability: "available",
+  },
+
+  // Backgrounds
+  {
+    id: 201,
+    name: "Background Oceano",
+    description: "Desbloqueie o tema de fundo Oceano",
+    cost: 200,
+    category: "background",
+    icon: <Palette className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 202,
+    name: "Background Floresta",
+    description: "Desbloqueie o tema de fundo Floresta",
+    cost: 200,
+    category: "background",
+    icon: <Palette className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 203,
+    name: "Background Sunset",
+    description: "Desbloqueie o tema de fundo Sunset",
+    cost: 300,
+    category: "background",
+    icon: <Palette className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 204,
+    name: "Background Noturno",
+    description: "Desbloqueie o tema de fundo Noturno",
+    cost: 400,
+    category: "background",
+    icon: <Palette className="h-6 w-6" />,
+    availability: "available",
+  },
+  {
+    id: 205,
+    name: "Background Arco-Íris",
+    description: "Desbloqueie o tema de fundo Arco-Íris",
+    cost: 500,
+    category: "background",
+    icon: <Palette className="h-6 w-6" />,
+    availability: "available",
+  },
+
+  // Recompensas originais
   {
     id: 1,
     name: "Bônus de XP (50)",
@@ -35,15 +130,6 @@ const mockRewards: Reward[] = [
     cost: 100,
     category: "experience",
     icon: <Zap className="h-6 w-6" />,
-    availability: "available",
-  },
-  {
-    id: 2,
-    name: "Ícone de Perfil Especial",
-    description: "Desbloqueie um ícone exclusivo para seu perfil",
-    cost: 250,
-    category: "special",
-    icon: <Gift className="h-6 w-6" />,
     availability: "available",
   },
   {
@@ -64,15 +150,7 @@ const mockRewards: Reward[] = [
     icon: <Zap className="h-6 w-6" />,
     availability: "available",
   },
-  {
-    id: 5,
-    name: "Tema Personalizado (Futuro)",
-    description: "Personalize a aparência do seu painel (em breve)",
-    cost: 500,
-    category: "special",
-    icon: <Gift className="h-6 w-6" />,
-    availability: "unavailable",
-  },
+  
   {
     id: 6,
     name: "Bônus de Medalha",
@@ -113,12 +191,24 @@ export function RewardsStore({ studentPoints, onRewardRedeemed }: RewardsStorePr
     item: "bg-secondary/10 border-secondary/30 text-secondary",
     experience: "bg-accent/10 border-accent/30 text-accent",
     special: "bg-primary/10 border-primary/30 text-primary",
+    avatar: "bg-blue-100/30 border-blue-200/50 text-blue-600",
+    background: "bg-purple-100/30 border-purple-200/50 text-purple-600",
   }
 
   const categoryLabels = {
     item: "Item",
     experience: "Experiência",
     special: "Especial",
+    avatar: "Avatar",
+    background: "Fundo",
+  }
+
+  const groupedRewards = {
+    avatar: mockRewards.filter((r) => r.category === "avatar"),
+    background: mockRewards.filter((r) => r.category === "background"),
+    experience: mockRewards.filter((r) => r.category === "experience"),
+    item: mockRewards.filter((r) => r.category === "item"),
+    special: mockRewards.filter((r) => r.category === "special"),
   }
 
   return (
@@ -140,82 +230,87 @@ export function RewardsStore({ studentPoints, onRewardRedeemed }: RewardsStorePr
         </div>
       </Card>
 
-      {/* Rewards Grid */}
-      <div>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold text-foreground">Loja de Recompensas</h2>
-          <p className="text-sm text-muted-foreground">Resgate seus pontos por recompensas exclusivas</p>
-        </div>
+      {/* Rewards Grid - Grouped by Category */}
+      <div className="space-y-8">
+        {/* Avatares */}
+        {groupedRewards.avatar.length > 0 && (
+          <div>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Users className="h-6 w-6" />
+                Avatares
+              </h2>
+              <p className="text-sm text-muted-foreground">Customize seu avatar desbloqueando novas opções</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {groupedRewards.avatar.map((reward) => (
+                <RewardCard
+                  key={reward.id}
+                  reward={reward}
+                  isAffordable={studentPoints >= reward.cost}
+                  isRedeemed={redeemedRewards.includes(reward.id)}
+                  categoryColors={categoryColors}
+                  categoryLabels={categoryLabels}
+                  onRedeemClick={handleRedeemClick}
+                  studentPoints={studentPoints}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {mockRewards.map((reward) => {
-            const isAffordable = studentPoints >= reward.cost
-            const isRedeemed = redeemedRewards.includes(reward.id)
-            const isUnavailable = reward.availability !== "available"
+        {/* Backgrounds */}
+        {groupedRewards.background.length > 0 && (
+          <div>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Palette className="h-6 w-6" />
+                Fundos
+              </h2>
+              <p className="text-sm text-muted-foreground">Customize o fundo do seu perfil com novos temas</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {groupedRewards.background.map((reward) => (
+                <RewardCard
+                  key={reward.id}
+                  reward={reward}
+                  isAffordable={studentPoints >= reward.cost}
+                  isRedeemed={redeemedRewards.includes(reward.id)}
+                  categoryColors={categoryColors}
+                  categoryLabels={categoryLabels}
+                  onRedeemClick={handleRedeemClick}
+                  studentPoints={studentPoints}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-            return (
-              <Card
-                key={reward.id}
-                className={`border-2 p-6 transition-all ${
-                  isUnavailable ? "opacity-60 bg-muted/30 border-muted/50" : "border-card hover:shadow-md"
-                }`}
-              >
-                <div className="flex flex-col gap-4">
-                  {/* Icon and Category */}
-                  <div className="flex items-start justify-between">
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-lg ${
-                        categoryColors[reward.category as keyof typeof categoryColors]
-                      }`}
-                    >
-                      {reward.icon}
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {categoryLabels[reward.category as keyof typeof categoryLabels]}
-                    </Badge>
-                  </div>
-
-                  {/* Content */}
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">{reward.name}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{reward.description}</p>
-                  </div>
-
-                  {/* Cost */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-primary">{reward.cost}</span>
-                    <span className="text-sm font-medium text-muted-foreground">pontos</span>
-                  </div>
-
-                  {/* Status and Button */}
-                  <div className="flex flex-col gap-2 pt-2">
-                    {isRedeemed && (
-                      <div className="flex items-center gap-2 rounded-lg bg-green-100/20 p-2 text-green-700">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-xs font-medium">Resgatado!</span>
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={() => handleRedeemClick(reward)}
-                      disabled={isUnavailable || !isAffordable || isRedeemed}
-                      variant={isAffordable && !isRedeemed && !isUnavailable ? "default" : "outline"}
-                      className="w-full"
-                    >
-                      {isUnavailable
-                        ? "Indisponível"
-                        : !isAffordable
-                          ? `Faltam ${reward.cost - studentPoints} pontos`
-                          : isRedeemed
-                            ? "Resgatado"
-                            : "Resgatar"}
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
+        {/* Outras Recompensas */}
+        {(groupedRewards.experience.length > 0 ||
+          groupedRewards.item.length > 0 ||
+          groupedRewards.special.length > 0) && (
+          <div>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-foreground">Outras Recompensas</h2>
+              <p className="text-sm text-muted-foreground">Resgate seus pontos por recompensas exclusivas</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...groupedRewards.experience, ...groupedRewards.item, ...groupedRewards.special].map((reward) => (
+                <RewardCard
+                  key={reward.id}
+                  reward={reward}
+                  isAffordable={studentPoints >= reward.cost}
+                  isRedeemed={redeemedRewards.includes(reward.id)}
+                  categoryColors={categoryColors}
+                  categoryLabels={categoryLabels}
+                  onRedeemClick={handleRedeemClick}
+                  studentPoints={studentPoints}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Confirmation Dialog */}
@@ -252,5 +347,88 @@ export function RewardsStore({ studentPoints, onRewardRedeemed }: RewardsStorePr
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+interface RewardCardProps {
+  reward: Reward
+  isAffordable: boolean
+  isRedeemed: boolean
+  categoryColors: Record<string, string>
+  categoryLabels: Record<string, string>
+  onRedeemClick: (reward: Reward) => void
+  studentPoints: number
+}
+
+function RewardCard({
+  reward,
+  isAffordable,
+  isRedeemed,
+  categoryColors,
+  categoryLabels,
+  onRedeemClick,
+  studentPoints,
+}: RewardCardProps) {
+  const isUnavailable = reward.availability !== "available"
+
+  return (
+    <Card
+      className={`border-2 p-6 transition-all ${
+        isUnavailable ? "opacity-60 bg-muted/30 border-muted/50" : "border-card hover:shadow-md"
+      }`}
+    >
+      <div className="flex flex-col gap-4">
+        {/* Icon and Category */}
+        <div className="flex items-start justify-between">
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-lg ${
+              categoryColors[reward.category as keyof typeof categoryColors]
+            }`}
+          >
+            {reward.icon}
+          </div>
+          <Badge variant="outline" className="text-xs">
+            {categoryLabels[reward.category as keyof typeof categoryLabels]}
+          </Badge>
+        </div>
+
+        {/* Content */}
+        <div>
+          <h3 className="text-lg font-bold text-foreground">{reward.name}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{reward.description}</p>
+        </div>
+
+        {/* Cost */}
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-primary">{reward.cost}</span>
+          <span className="text-sm font-medium text-muted-foreground">pontos</span>
+        </div>
+
+        {/* Status and Button */}
+        <div className="flex flex-col gap-2 pt-2">
+          {isRedeemed && (
+            <div className="flex items-center gap-2 rounded-lg bg-green-100/20 p-2 text-green-700">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-xs font-medium">Resgatado!</span>
+            </div>
+          )}
+
+          <Button
+            onClick={() => onRedeemClick(reward)}
+            disabled={isUnavailable || !isAffordable || isRedeemed}
+            variant={isAffordable && !isRedeemed && !isUnavailable ? "default" : "outline"}
+            className="w-full"
+          >
+            {isUnavailable
+              ? "Indisponível"
+              : !isAffordable
+                ? `Faltam ${reward.cost - studentPoints} pontos`
+                : isRedeemed
+                  ? "Resgatado"
+                  : "Resgatar"}
+          </Button>
+        </div>
+      </div>
+    </Card>
   )
 }

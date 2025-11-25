@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/app/components/ui/ta
 import { OverviewTab } from "@/app/components/student/overview-tab"
 import { MedalsTab } from "@/app/components/student/medals-tab"
 import { RewardsStore } from "@/app/components/student/rewards-store"
+import { CustomizationTab } from "@/app/components/ui/customization-tab"
+
 
 const studentData = {
   name: "Maria Silva",
@@ -33,8 +35,15 @@ const studentData = {
   ],
 }
 
-export function StudentProfile() {
+interface StudentProfileProps {
+  onBackgroundChange?: (backgroundId: string) => void
+}
+
+export function StudentProfile({ onBackgroundChange }: StudentProfileProps) {
   const [studentPoints, setStudentPoints] = useState(studentData.totalPoints)
+  const [redeemedRewards, setRedeemedRewards] = useState<number[]>([])
+  const [selectedAvatar, setSelectedAvatar] = useState("1")
+  const [selectedBackground, setSelectedBackground] = useState("1")
 
   const handleLogout = () => {
     console.log("Logout clicked")
@@ -43,6 +52,7 @@ export function StudentProfile() {
   const handleRewardRedeemed = (rewardId: number, pointsUsed: number) => {
     console.log(`Reward ${rewardId} redeemed! Points used: ${pointsUsed}`)
     setStudentPoints((prev) => prev - pointsUsed)
+    setRedeemedRewards((prev) => [...prev, rewardId])
   }
 
   return (
@@ -70,6 +80,12 @@ export function StudentProfile() {
               <span className="flex items-center gap-2">🏆 Medalhas</span>
             </TabsTrigger>
             <TabsTrigger
+              value="customization"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none flex-1"
+            >
+              <span className="flex items-center gap-2">🎨 Personalização</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="rewards"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none flex-1"
             >
@@ -89,6 +105,19 @@ export function StudentProfile() {
               <MedalsTab medals={studentData.medals} />
             </TabsContent>
 
+            <TabsContent value="customization" className="mt-0">
+              <CustomizationTab
+                currentAvatar={selectedAvatar}
+                currentBackground={selectedBackground}
+                onAvatarChange={setSelectedAvatar}
+                onBackgroundChange={(bg) => {
+                  setSelectedBackground(bg)
+                  onBackgroundChange?.(bg)
+                }}
+                redeemedRewards={redeemedRewards}
+              />
+            </TabsContent>
+
             <TabsContent value="rewards" className="mt-0">
               <RewardsStore studentPoints={studentPoints} onRewardRedeemed={handleRewardRedeemed} />
             </TabsContent>
@@ -98,3 +127,4 @@ export function StudentProfile() {
     </div>
   )
 }
+
