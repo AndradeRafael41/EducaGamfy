@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import { CreateTask } from "./create-task"
 import { AssignTask } from "./assign-task"
 import { ViewTasks } from "./view-tasks"
-import { ClipboardCheck, Share2 } from "lucide-react"
+import { TeacherTasksList } from "./teacher-tasks-list"
+import { ClipboardCheck, Share2, List } from "lucide-react"
 
 interface Student {
   id: string
@@ -29,6 +30,8 @@ interface TaskData {
   description: string
   date: string
   dueDate?: string
+  maxPoints?: number
+  classId?: string
 }
 
 interface TaskAssignment {
@@ -66,8 +69,12 @@ export function TaskTabs({ classrooms }: TaskTabsProps) {
   }
 
   return (
-    <Tabs defaultValue="create" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 bg-muted border border-border">
+    <Tabs defaultValue="created" className="w-full">
+      <TabsList className="grid w-full grid-cols-4 bg-muted border border-border">
+        <TabsTrigger value="created" className="text-sm">
+          <List className="h-4 w-4 mr-2" />
+          Minhas Tarefas
+        </TabsTrigger>
         <TabsTrigger value="create" className="text-sm">
           <ClipboardCheck className="h-4 w-4 mr-2" />
           Criar Tarefa
@@ -82,8 +89,12 @@ export function TaskTabs({ classrooms }: TaskTabsProps) {
         </TabsTrigger>
       </TabsList>
 
+      <TabsContent value="created" className="mt-6">
+        <TeacherTasksList />
+      </TabsContent>
+
       <TabsContent value="create" className="mt-6">
-        <CreateTask onTaskCreated={handleTaskCreated} tasks={tasks} onTaskDeleted={handleTaskDeleted} />
+        <CreateTask onTaskCreated={handleTaskCreated} tasks={tasks} onTaskDeleted={handleTaskDeleted} classrooms={classrooms} />
       </TabsContent>
 
       <TabsContent value="assign" className="mt-6">

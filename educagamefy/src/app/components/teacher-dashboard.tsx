@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
@@ -49,6 +51,7 @@ interface Task {
 }
 
 export default function TeacherDashboard() {
+  const router = useRouter()
   const [classrooms, setClassrooms] = useState<Classroom[]>([
     {
       id: "1",
@@ -113,8 +116,9 @@ export default function TeacherDashboard() {
   const [selectedStudentsToAssign, setSelectedStudentsToAssign] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
-  const handleLogout = () => {
-    console.log("Logout clicked")
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
+    router.push("/login")
   }
 
   const handleAddStudent = () => {
